@@ -1,0 +1,12 @@
+### Get all tasks
+GET http://localhost:8080/tasks
+
+###
+
+### Create a new task
+POST http://localhost:8080/tasks
+Content-Type: application/json
+
+{
+  "name": "New Task"
+}
