@@ -1,8 +1,10 @@
 package services
 
 import (
+	"log"
 	"taskmanager/interfaces"
 	"taskmanager/schemas"
+	"taskmanager/validation"
 )
 
 type TaskService struct {
@@ -13,12 +15,15 @@ func NewTaskService(repo interfaces.TaskRepository) interfaces.TaskService {
 	return &TaskService{repo: repo}
 }
 
-// GetTasks fetches tasks
 func (s *TaskService) GetTasks() []schemas.Task {
 	return s.repo.FetchTasks()
 }
 
-// CreateTask creates a new task
 func (s *TaskService) CreateTask(task schemas.Task) schemas.Task {
+	err := validation.ValidateTask(task)
+	if err != nil {
+		log.Fatalf("Validation error: %v", err)
+	}
+
 	return s.repo.SaveTask(task)
 }

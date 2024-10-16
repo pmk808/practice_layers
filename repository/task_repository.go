@@ -1,32 +1,52 @@
 package repository
 
 import (
+	"database/sql"
+	"log"
 	"taskmanager/interfaces"
 	"taskmanager/schemas"
+
+	_ "github.com/lib/pq"
 )
 
-type FakeTaskRepository struct {
-	tasks []schemas.Task
+type PostgresTaskRepository struct {
+	db *sql.DB
 }
 
-// NewFakeTaskRepository creates a new instance of FakeTaskRepository
-func NewFakeTaskRepository() interfaces.TaskRepository {
-	return &FakeTaskRepository{
-		tasks: []schemas.Task{
-			{ID: 1, Name: "Task 1"},
-			{ID: 2, Name: "Task 2"},
-		},
+// NewPostgresTaskRepository creates a new instance of PostgresTaskRepository
+func NewPostgresTaskRepository(db *sql.DB) interfaces.TaskRepository {
+	return &PostgresTaskRepository{db: db}
+}
+
+// FetchTasks returns a list of tasks from the PostgreSQL database
+func (r *PostgresTaskRepository) FetchTasks() []schemas.Task {
+	rows, err := r.db.Query("SELECT id, name FROM tasks")
+	if err != nil {
+		log.Fatalf("Error fetching tasks: %v", err)
 	}
+	defer rows.Close()
+
+	var tasks []schemas.Task
+	for rows.Next() {
+		var task schemas.Task
+		if err := rows.Scan(&task.ID, &task.Name); err != nil {
+			log.Fatalf("Error scanning task: %v", err)
+		}
+		tasks = append(tasks, task)
+	}
+
+	return tasks
 }
 
-// FetchTasks returns a list of tasks
-func (r *FakeTaskRepository) FetchTasks() []schemas.Task {
-	return r.tasks
-}
+// SaveTask saves a new task to the PostgreSQL database
+func (r *PostgresTaskRepository) SaveTask(task schemas.Task) schemas.Task {
+	err := r.db.QueryRow(
+		"INSERT INTO tasks (name) VALUES ($1) RETURNING id",
+		task.Name,
+	).Scan(&task.ID)
+	if err != nil {
+		log.Fatalf("Error saving task: %v", err)
+	}
 
-// SaveTask adds a new task to the list
-func (r *FakeTaskRepository) SaveTask(task schemas.Task) schemas.Task {
-	task.ID = len(r.tasks) + 1 // Generate a new ID
-	r.tasks = append(r.tasks, task)
 	return task
 }
