@@ -11,8 +11,8 @@ import (
 )
 
 func TaskHandler(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	repo := repository.NewPostgresTaskRepository(db) // Pass the db connection here
-	validator := validation.NewTaskValidator()       // New validation service
+	repo := repository.NewPostgresTaskRepository(db)
+	validator := validation.NewTaskValidator()
 	service := services.NewTaskService(repo, validator)
 
 	switch r.Method {

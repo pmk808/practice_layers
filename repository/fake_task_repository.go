@@ -19,12 +19,10 @@ func NewFakeTaskRepository() interfaces.TaskRepository {
 	}
 }
 
-// FetchTasks returns a list of tasks
 func (r *FakeTaskRepository) FetchTasks() []schemas.Task {
 	return r.tasks
 }
 
-// SaveTask adds a new task to the list
 func (r *FakeTaskRepository) SaveTask(task schemas.Task) schemas.Task {
 	task.ID = len(r.tasks) + 1 // Generate a new ID
 	r.tasks = append(r.tasks, task)
