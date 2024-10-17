@@ -1,23 +1,19 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
-	"taskmanager/config"
 	"taskmanager/repository"
 	"taskmanager/schemas"
 	"taskmanager/services"
-
-	_ "github.com/lib/pq"
+	"taskmanager/validation"
 )
 
-func TaskHandler(w http.ResponseWriter, r *http.Request) {
-	// Establish DB connection
-	db := config.ConnectDB()
-	defer db.Close()
-
-	repo := repository.NewPostgresTaskRepository(db)
-	service := services.NewTaskService(repo)
+func TaskHandler(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	repo := repository.NewPostgresTaskRepository(db) // Pass the db connection here
+	validator := validation.NewTaskValidator()       // New validation service
+	service := services.NewTaskService(repo, validator)
 
 	switch r.Method {
 	case http.MethodGet:
@@ -27,20 +23,21 @@ func TaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 		var newTask schemas.Task
-
-		// Read request body
 		err := json.NewDecoder(r.Body).Decode(&newTask)
 		if err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
+			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
 
-		// Create the new task
-		createdTask := service.CreateTask(newTask)
+		createdTask, err := service.CreateTask(newTask)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
-		// Respond with the created task
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(createdTask)
+
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}

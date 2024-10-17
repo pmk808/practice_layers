@@ -1,13 +1,20 @@
 package validation
 
 import (
-	"errors"
-	"taskmanager/schemas"
+    "errors"
+    "taskmanager/schemas"
 )
 
-func ValidateTask(task schemas.Task) error {
-	if task.Name == "" {
-		return errors.New("task name cannot be empty")
-	}
-	return nil
+type TaskValidator struct {}
+
+func NewTaskValidator() *TaskValidator {
+    return &TaskValidator{}
+}
+
+func (v *TaskValidator) ValidateTask(task schemas.Task) error {
+    if task.Name == "" {
+        return errors.New("task name is required")
+    }
+    // Add more validation as needed
+    return nil
 }

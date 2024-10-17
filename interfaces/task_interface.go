@@ -5,7 +5,7 @@ import "taskmanager/schemas"
 // TaskService defines the service layer functions
 type TaskService interface {
 	GetTasks() []schemas.Task
-	CreateTask(task schemas.Task) schemas.Task
+	CreateTask(task schemas.Task) (schemas.Task, error)
 }
 
 // TaskRepository defines the repository layer functions
