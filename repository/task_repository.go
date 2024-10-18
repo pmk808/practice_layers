@@ -13,12 +13,10 @@ type PostgresTaskRepository struct {
 	db *sql.DB
 }
 
-// NewPostgresTaskRepository creates a new instance of PostgresTaskRepository
 func NewPostgresTaskRepository(db *sql.DB) interfaces.TaskRepository {
 	return &PostgresTaskRepository{db: db}
 }
 
-// FetchTasks returns a list of tasks from the PostgreSQL database
 func (r *PostgresTaskRepository) FetchTasks() []schemas.Task {
 	rows, err := r.db.Query("SELECT id, name FROM tasks")
 	if err != nil {
